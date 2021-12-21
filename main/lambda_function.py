@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 import policy_template 
+import base64
 from pprint import pprint
 from utils import S3Error, IAMError
 from utils import passwordGenerator, buildResult
@@ -72,7 +73,7 @@ def createIAMUser(user, group, dn, alias):
         body={
             "userArn": result['User']['Arn'],
             "userId": result['User']['UserId'],
-            "alias": alias
+            "alias": base64.b64encode(alias.encode())
         }
     )
 
@@ -101,7 +102,7 @@ def createIAMUser(user, group, dn, alias):
     resultSummary['login_profile'] = buildResult(
         result,
         body={
-            "password": password
+            "password": base64.b64encode(password.encode())
         }
     )
 
