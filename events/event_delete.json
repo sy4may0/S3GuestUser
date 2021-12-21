@@ -1,0 +1,10 @@
+{
+  "queryStringParameters": {
+    "user": "cross.karasawa",
+    "group": "s3_guest",
+    "dn": "jp.law-steadiness",
+    "bucket": "secure-ex",
+    "alias": "唐澤 貴洋",
+    "action" : "delete"
+  }
+}
