@@ -1,14 +1,58 @@
 import json
 import boto3
 import os
-import policy_template 
+import client.policy_template as policy_template
 import base64
-from pprint import pprint
-from utils import S3Error, IAMError
-from utils import passwordGenerator, buildResult
+from client.utils import S3Error, IAMError
+from client.utils import passwordGenerator, buildResult
 from botocore.exceptions import ClientError
 
 IAM_CHANGE_PASSWORD_POLICY_ARN = "arn:aws:iam::aws:policy/IAMUserChangePassword"
+
+def getAccount():
+    try:
+        response = boto3.client('sts').get_caller_identity()
+        account = response['Account']
+        result = buildResult(
+            response,
+            body={ 'aws_account': account }
+        )
+    except ClientError as e:
+        result = buildResult(
+            e.response,
+            error=e.response['Error']
+        )
+
+    return result
+    
+def getS3Region(bucket):
+    try:
+        response = boto3.client('sts').get_caller_identity()
+        account = response['Account']
+        response = boto3.client('s3').get_bucket_location(
+            Bucket=bucket,
+            ExpectedBucketOwner=account
+        )
+
+        print(response)
+
+        result = buildResult(
+            response,
+            body={ 
+                "bucket": bucket, 
+                "bucket_location": response['LocationConstraint'] 
+            }
+        )
+ 
+    except ClientError as e:
+        result = buildResult(
+            e.response,
+            error=e.response['Error']
+        )
+
+    return result
+ 
+
 
 # Create S3 Object.
 def createS3Object(bucket, key):
@@ -68,12 +112,12 @@ def createIAMUser(user, group, dn, alias):
         ]
     )
 
-    resultSummary['user'] = buildResult(
+    resultSummary['create_user'] = buildResult(
         result,
         body={
             "userArn": result['User']['Arn'],
             "userId": result['User']['UserId'],
-            "alias": base64.b64encode(alias.encode())
+            "alias": base64.b64encode(alias.encode()).decode()
         }
     )
 
@@ -83,7 +127,7 @@ def createIAMUser(user, group, dn, alias):
         UserName=user
     )
 
-    resultSummary['group'] = buildResult(
+    resultSummary['add_to_group'] = buildResult(
         result,
         body={
             "group": group
@@ -99,10 +143,10 @@ def createIAMUser(user, group, dn, alias):
         PasswordResetRequired=True
     )
 
-    resultSummary['login_profile'] = buildResult(
+    resultSummary['create_login_profile'] = buildResult(
         result,
         body={
-            "password": base64.b64encode(password.encode())
+            "password": base64.b64encode(password.encode()).decode()
         }
     )
 
@@ -120,12 +164,12 @@ def deleteIAMUser(user, group):
             UserName=user,
         )
 
-        resultSummary['login_profile'] = buildResult(
+        resultSummary['delete_login_profile'] = buildResult(
             result
         )
 
     except ClientError as e:
-        resultSummary['login_profile'] = buildResult(
+        resultSummary['delete_login_profile'] = buildResult(
             e.response,
             error=e.response['Error']
         )
@@ -137,12 +181,12 @@ def deleteIAMUser(user, group):
             UserName=user
         )
 
-        resultSummary['group'] = buildResult(
+        resultSummary['remove_from_group'] = buildResult(
             result
         )
  
     except ClientError as e:
-        resultSummary['group'] = buildResult(
+        resultSummary['remove_from_group'] = buildResult(
             e.response,
             error=e.response['Error']
         )
@@ -153,12 +197,12 @@ def deleteIAMUser(user, group):
             UserName=user
         )
 
-        resultSummary['user'] = buildResult(
+        resultSummary['delete_user'] = buildResult(
             result
         )
 
     except ClientError as e:
-        resultSummary['user'] = buildResult(
+        resultSummary['delete_user'] = buildResult(
             e.response,
             error=e.response['Error']
         )
@@ -184,7 +228,7 @@ def createIAMPolicy(user, dn, bucket):
         PolicyDocument=policyDump
     )
     policyArn = result['Policy']['Arn']
-    resultSummary['policy'] = buildResult(
+    resultSummary['create_policy'] = buildResult(
         result,
         body={ "policyArn": policyArn }
     )
@@ -265,19 +309,19 @@ def deleteIAMPolicy(user):
             PolicyArn=policyArn
         )
 
-        resultSummary['policy'] = buildResult(
+        resultSummary['delete_policy'] = buildResult(
             result,
         )
 
     except ClientError as e:
-        resultSummary['policy'] = buildResult(
+        resultSummary['delete_policy'] = buildResult(
             e.response,
             error=e.response['Error']
         )
 
     return resultSummary
 
-def lambda_handler(event, context):
+def handler(event):
     parameters = event['queryStringParameters']
 
     user = parameters['user']
@@ -289,6 +333,10 @@ def lambda_handler(event, context):
     action = parameters['action']
 
     result = {}
+    result['meta'] = {
+        "account" : getAccount(),
+        "s3_bucket" : getS3Region(bucket)
+    }
     if action == 'create':
         result['create_object'] = createS3Object(bucket, objectKey)
         result['create_iam_user'] = createIAMUser(user, group, dn, alias)

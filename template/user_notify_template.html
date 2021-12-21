@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>AWS Guest User Notification</title>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <!-- CSS only -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+ </head>
+ <style>
+    h2 {
+     margin-top: 1em;
+    }
+  
+ </style>
+ <body>
+  <div class="container">
+    <h2>AWS S3 ゲストユーザー通知書</h2>
+    <hr>
+    <h3>ユーザーアカウント</h3>
+    <table class="table">
+      <thead class="table-dark">
+       <tr>
+        <th scope="col">アカウントID</th>
+        <th scope="col">ユーザー名</th>
+        <th scope="col">初期パスワード</th>
+       </tr>
+      </thead>
+      <tbody>
+        <tr>
+         <td>{{ account }}</td>
+         <td>{{ user }}</td>
+         <td>{{ password }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>ログイン</h3>
+    <p>
+      <a href="{{ console_link }}">ログインはこちら</a>
+    </p>
+    <p>※ 初期パスワードを変更する場合、こちらのリンクで一度ログイン後、パスワード変更を行ってください。</p>
+
+    <h3>ユーザーディレクトリ</h3>
+    <p>
+      <a href="{{ dir_link }}">ユーザーディレクトリはこちら</a>
+    </p>
+    <p>※ 初期パスワード変更後にアクセス可能となります。</p>
+  </div>
+ </body>
+</html>
