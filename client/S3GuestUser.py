@@ -1,10 +1,10 @@
 import json
 import boto3
 import os
-import client.policy_template as policy_template
+import client.PolicyTemplate as policy_template
 import base64
-from client.utils import S3Error, IAMError
-from client.utils import passwordGenerator, buildResult
+from client.Utils import S3Error, IAMError
+from client.Utils import passwordGenerator, buildResult
 from botocore.exceptions import ClientError
 
 IAM_CHANGE_PASSWORD_POLICY_ARN = "arn:aws:iam::aws:policy/IAMUserChangePassword"
@@ -144,7 +144,7 @@ def createIAMUser(user, group, dn, alias):
     resultSummary['create_login_profile'] = buildResult(
         result,
         body={
-            "password": base64.b64encode(password.encode()).decode()
+            "password": password
         }
     )
 

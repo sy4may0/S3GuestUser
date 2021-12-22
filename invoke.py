@@ -22,6 +22,9 @@ else:
     print("ERROR: {0} is not found.".format(QUERY_PATH))
     exit(255)
 
+if not os.path.isdir(NOTIFICATION_PATH):
+    os.mkdir(NOTIFICATION_PATH)
+
 result = client.S3GuestUser.handler(query)
 
 print("---- QUERY RESULT ---------------------------")
@@ -31,12 +34,12 @@ if query['queryStringParameters']['action'] == 'create':
     user = result['create_iam_user']['create_user']['body']
     userName = user['userArn'].split('/')[1]
     loginProfile = result['create_iam_user']['create_login_profile']['body']
-    password = base64.b64decode(loginProfile['password'])
+    password = loginProfile['password']
     account = result['meta']['account']['body']['aws_account']
     s3Bucket = result['meta']['s3_bucket']['body']['bucket']
     s3Region = result['meta']['s3_bucket']['body']['bucket_location']
     s3Url = result['create_object']['body']['s3_url']
-    s3Prefix = s3Url.replace("s3://{0}/", "")
+    s3Prefix = s3Url.replace("s3://{0}/".format(s3Bucket), "")
 
     consoleLoginLink = LOGIN_LINK_FORMAT.format(account)
     dirLink = DIR_LINK_FORMAT.format(
