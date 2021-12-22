@@ -241,6 +241,7 @@ $RECYCLE.BIN/
 
 */build/*
 
-client_tools/query/
+notification_file/
+events/
 
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode

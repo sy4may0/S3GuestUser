@@ -34,8 +34,6 @@ def getS3Region(bucket):
             ExpectedBucketOwner=account
         )
 
-        print(response)
-
         result = buildResult(
             response,
             body={ 
